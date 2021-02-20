@@ -3,6 +3,8 @@ import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 import re
 import math
+import calendarService
+
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
 
 creds = ServiceAccountCredentials.from_json_keyfile_name('creds.json',scope)
@@ -67,3 +69,8 @@ def next_row(sheet,col_number):
     else:
         return len(student_list)+1
 
+def fetch_events(n):
+    return calendarService.n_events(n)
+
+def compare(time1, time2):
+    return calendarService.compareTime(time1,time2)
