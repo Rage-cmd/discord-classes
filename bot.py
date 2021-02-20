@@ -71,7 +71,7 @@ async def list_subjects(ctx):
     """
         Sends a message with the list of all subjects along with mentor names
     """
-    emb = await studentService.getsubjectlistemb(ctx)
+    emb = await studentService.get_subject_list_emb(ctx)
     await ctx.send(content=f'Available subjects are\n', embed=emb)
 
 
@@ -81,7 +81,7 @@ async def choose_subject(ctx, subject_number):
         This functions helps students to opt for subjects using the number
         mentioned against the subject when called the !list command
     """
-    msg = await studentService.enrolstudent(ctx, subject_number)
+    msg = await studentService.enrol_student(ctx, subject_number)
     await ctx.send(msg)
 
 
@@ -95,7 +95,7 @@ async def update_subject(ctx, fromSubjectNo, ToSubjectNo):
             fromSubjectNo: The subject which was currently opted by them
             ToSubjectNo:   The subject which they want to update to
     """
-    msg = studentService.updatestudentcourses(ctx,fromSubjectNo,ToSubjectNo)
+    msg = studentService.update_student_courses(ctx, fromSubjectNo,ToSubjectNo)
     await ctx.send(msg)
 
 
