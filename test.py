@@ -11,6 +11,7 @@ import re
 import mentorService
 import interface
 import calendarService
+import channelService
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -24,7 +25,6 @@ bot = commands.Bot(command_prefix='!',intents = intents)
 total_subjects = interface.subject_count()
 
 #--------------------------------------------------------------
-# calendarService.n_events(2)
 server = []
 #--------------------------------------------------------------
 async def get_mentor_name(subject_name):
@@ -33,19 +33,14 @@ async def get_mentor_name(subject_name):
     return mentorobj.name
 
 
-
 @bot.event
 async def on_ready():
-
     global server
-
+    
     for guild  in bot.guilds:
-        print(guild.name)
         if guild.name == "some server":
             server = guild
-
-    print("integ ", server.name)
-
+    
     print(f'{bot.user.name} is running')
 
 
@@ -54,6 +49,13 @@ async def on_ready():
 from discord.ext import commands, tasks
 from datetime import datetime
 
+def channel_names(channel_list):
+    names = []
+    for channel in channel_list:
+        names.append(channel.name)
+    return names
+
+
 executed_events = []
 
 @tasks.loop(minutes = 1)
@@ -61,39 +63,13 @@ async def create_channels():
 
     global executed_events
     global server
+    print("running...")
+    existing_channels = channel_names(server.channels)
 
-    running_events = calendarService.n_events(10)
-    print(running_events)
-    if running_events:
-        for event in running_events:
-            
-            print("FOR",event["name"])
-            
-            now = datetime.now()
-            channel_name = event["name"]
-
-            if channel_name not in executed_events:
-                
-                print("not")
-
-                if calendarService.compareTime( event["start"], now ) :
-                    print("compare")
-                    existing_channels = discord.utils.get(server.channels,name = channel_name)
-                    
-                    if not existing_channels:
-                        print("existing")
-                        print(f'Creating a new channel: {channel_name}')
-                        await server.create_text_channel(channel_name)
-                        
-                    executed_events.append(channel_name)
-            else:
-                if calendarService.compareTime(event["end"],now):
-
-                    delete_channel = discord.utils.get(server.channels,name = channel_name)
-                    await delete_channel.delete()
-                    executed_events.remove(channel_name)
-
-        print(executed_events)    
+    if channelService.can_schedule():
+        upcoming_channels = channelService.add_channel(executed_events, existing_channels)
+        for channel in upcoming_channels:
+            await server.create_text_channel(channel)
 
 
 @create_channels.before_loop
@@ -105,17 +81,6 @@ async def before_my_task():
 create_channels.start()
 
 #------------------------------------------------------------------------------------------
-
-
-# @bot.command(name = 'create-channel')
-# @commands.has_role('admin')
-# async def create_channel(ctx,channel_name = "general"):
-#     guild = ctx.guild
-#     print("before all that")
-#     existing_channels = discord.utils.get(guild.channels,name = channel_name)
-#     if not existing_channels:
-#         print(f'Creating a new channel: {channel_name}')
-#         await guild.create_text_channel(channel_name)
 
 
 @bot.command(name = 'create-private-text-channel')
