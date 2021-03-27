@@ -1,12 +1,14 @@
 import os
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
+from datetime import datetime
 
 import interface
 import mentorService
 import studentService
+import channelService
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -18,10 +20,62 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 total_subjects = interface.subject_count()
 
+server_name = "some server"
+server = []
+executed_events = []
 
+
+def channel_names(channel_list):
+    """
+    A utility function to get the names of all the channels in the server.
+    Parameters:
+        List of channels
+    Returns:
+        List of string (names of the channels)
+    """
+    names = []
+    for channel in channel_list:
+        names.append(channel.name)
+    return names
+
+
+#capture the server(global variable) when the bot gets ready
 @bot.event
 async def on_ready():
+    global server
+    
+    for guild  in bot.guilds:
+        if guild.name == server_name:
+            server = guild
+            break
+    
     print(f'{bot.user.name} is running')
+
+
+# The asynchronous fucntion create_channels will run every minute
+@tasks.loop(minutes = 1)
+async def create_channels():
+    """
+    This function will look for any events in the admin calendar at the current time
+    and will create channels accordingly.
+    """
+    global executed_events
+    global server
+    print("running...")
+    existing_channels = channel_names(server.channels)
+
+    await channelService.create_channel(server, executed_events, existing_channels)
+
+
+# the loop should start only after the bot is set up
+@create_channels.before_loop
+async def before_my_task():
+    print("Waiting for the bot to show up...")
+    await bot.wait_until_ready()
+
+
+create_channels.start()
+
 
 
 @bot.command(name='create-channel')
