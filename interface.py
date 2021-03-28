@@ -11,17 +11,17 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('creds.json',scope)
 client = gspread.authorize(creds)
 
 sheet = client.open('Responses')
-student_sheet = sheet.get_worksheet(1)
 mentor_sheet = sheet.get_worksheet(0)
+student_sheet = sheet.get_worksheet(1)
 course_sheet = sheet.get_worksheet(2)
 schedule_sheet = sheet.get_worksheet(3)
 
 def subject_count():
     return len(course_sheet.row_values(1))
 
-def enrol(student_name, subject_number):
+def enrol(student_id, subject_number):
     row = next_row(course_sheet,subject_number)
-    course_sheet.update_cell(row, subject_number, student_name)
+    course_sheet.update_cell(row, subject_number, str(student_id))
 
 def enrolled_students(subject_number):
     return course_sheet.col_values(subject_number)
@@ -34,9 +34,9 @@ def get_sheet_list(query):
 
 def get_row_index(query, column):
     col_elements = course_sheet.col_values(column)
-    if query not in col_elements:
+    if str(query) not in col_elements:
         return -1
-    return col_elements.index(query)+1
+    return col_elements.index(str(query))+1
 
 def clear(row,column):
     del_range = course_sheet.range(row, column, row, column)

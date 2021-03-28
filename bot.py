@@ -20,7 +20,7 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 total_subjects = interface.subject_count()
 
-server_name = "some server"
+server_name = "myserver"
 server = []
 executed_events = []
 
@@ -73,10 +73,7 @@ async def before_my_task():
     print("Waiting for the bot to show up...")
     await bot.wait_until_ready()
 
-
 create_channels.start()
-
-
 
 @bot.command(name='create-channel')
 @commands.has_role('admin')
