@@ -20,7 +20,7 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 total_subjects = interface.subject_count()
 
-server_name = "myserver"
+server_name = "some server"
 server = []
 executed_events = []
 
@@ -39,6 +39,16 @@ def channel_names(channel_list):
     return names
 
 
+async def create_roles(server,all_subject_list):
+    subject_col = 2
+    for i in range(1,len(all_subject_list)):
+        for subject in all_subject_list[i][subject_col].split(', '):
+            
+            roles = await server.fetch_roles()
+            
+            if not discord.utils.get(roles,name = subject):
+                await server.create_role(name = subject, mentionable = True)
+
 #capture the server(global variable) when the bot gets ready
 @bot.event
 async def on_ready():
@@ -48,7 +58,10 @@ async def on_ready():
         if guild.name == server_name:
             server = guild
             break
-    
+    all_subject_list = interface.get_sheet_list('mentor')
+
+    await create_roles(server,all_subject_list)
+
     print(f'{bot.user.name} is running')
 
 
