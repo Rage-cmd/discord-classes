@@ -73,4 +73,15 @@ def fetch_events(n):
     return calendarService.n_events(n)
 
 def compare(time1, time2):
+    """ 
+    This function compares time and return integers based on the comparision as follows:
+        if time1 == time 2 --> Return 1
+
+        if time1 < time2   --> Return 0
+
+        if time1 > time2   --> Return 2
+    """
     return calendarService.compareTime(time1,time2)
+
+def to_date_time(inp_time):
+    return calendarService.to_date_time(inp_time)
