@@ -77,7 +77,6 @@ def n_events(n):
             "start": convertTime(start),
             "end": convertTime(end)
         }
-
         all_events.append(event_info)
 
     return all_events
@@ -98,8 +97,34 @@ def convertTime(time):
 
 def compareTime(time_a,time_b):
     if time_a["day"] == time_b.day and time_a["hour"] == time_b.hour and time_a["minute"] == time_b.minute:
-        return True
-    return False
+        return 1
+    
+    if time_a["day"] < time_b.day:
+        return 0
+    
+    if time_a["hour"] < time_b.hour:
+        return 0
+
+    if time_a["hour"] < time_b.hour:
+        return 0
+    
+    if time_a["day"] > time_b.day:
+        return 2
+    
+    if time_a["hour"] > time_b.hour:
+        return 2
+
+    if time_a["hour"] > time_b.hour:
+        return 2
+
+def to_date_time(inp_time):
+    return datetime.datetime(
+        inp_time["year"],
+        inp_time["month"],
+        inp_time["day"],
+        inp_time["hour"],
+        inp_time["minute"]
+    )    
 
 # create_event("abc")
 # n_events(5)
