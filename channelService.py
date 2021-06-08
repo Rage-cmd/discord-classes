@@ -17,13 +17,19 @@ async def create_channel(server, executed_events, existing_channels):
         global present_events
 
         for event in present_events:    
-            channel_name = event["name"]
+            # lower because discord creates channels in lower case only
+            channel_name = event["name"].lower()
             
             if channel_name not in executed_events:
                 now = datetime.now()
-                event_time = event["start"]
-            
-                if interface.compare(event_time, now) and channel_name not in existing_channels:
+                event_start_time = interface.to_date_time(event["start"])
+                event_end_time = interface.to_date_time(event["end"])
+
+                # compare_start = interface.compare(event_start_time, now)
+                # compare_end = interface.compare(event_end_time, now)
+
+                # if compare_start <= 1 and compare_end > 1  and channel_name not in existing_channels:
+                if event_start_time <= now and event_end_time > now and channel_name not in existing_channels:
                     await server.create_text_channel(channel_name)
                     executed_events.append(channel_name)
             else:
