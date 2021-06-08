@@ -39,6 +39,16 @@ def channel_names(channel_list):
     return names
 
 
+async def create_roles(server,all_subject_list):
+    subject_col = 2
+    for i in range(1,len(all_subject_list)):
+        for subject in all_subject_list[i][subject_col].split(', '):
+            
+            roles = await server.fetch_roles()
+            
+            if not discord.utils.get(roles,name = subject):
+                await server.create_role(name = subject, mentionable = True)
+
 #capture the server(global variable) when the bot gets ready
 @bot.event
 async def on_ready():
@@ -48,7 +58,10 @@ async def on_ready():
         if guild.name == server_name:
             server = guild
             break
-    
+    all_subject_list = interface.get_sheet_list('mentor')
+
+    await create_roles(server,all_subject_list)
+
     print(f'{bot.user.name} is running')
 
 
@@ -73,10 +86,7 @@ async def before_my_task():
     print("Waiting for the bot to show up...")
     await bot.wait_until_ready()
 
-
 create_channels.start()
-
-
 
 @bot.command(name='create-channel')
 @commands.has_role('admin')
