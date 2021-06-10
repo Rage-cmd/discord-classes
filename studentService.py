@@ -25,7 +25,7 @@ async def get_subject_list_emb(ctx):
 
         # for all the subjects of the mentor
         subject_col = 2
-        for subject in list_of_all_subjects[i][subject_col].split(', '):
+        for subject in list_of_all_subjects[i][subject_col].splitlines():#split(', '):
             # add it in the embed and increment the serial no.
             value_emb = value_emb + str(serial_no) + '. ' + subject + "\n"
             serial_no += 1

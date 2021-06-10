@@ -25,6 +25,8 @@ async def create_channel(server, executed_events, existing_channels):
         existing_channels: list of channels present in the guild.
     """
     present_events = fetch_events()
+    names= [i["name"] for i in present_events]
+    print(names)
     if present_events:
         for event in present_events:    
             # lower because discord creates channels in lower case only
@@ -32,7 +34,7 @@ async def create_channel(server, executed_events, existing_channels):
             channel_name = event["name"].lower().replace(" ","-")
 
             # if the event hasn't executed yet
-            if channel_name not in executed_events:
+            if channel_name not in existing_channels:
                 # now = current_time
                 now = datetime.now()
                 now = now.replace(second=0,microsecond=0) # for ease of comparision
@@ -46,20 +48,24 @@ async def create_channel(server, executed_events, existing_channels):
                 # if current_time is equal to the reminder_time then send message on 
                 # alerts channel
                 if now == reminder_time:
-                    print("here",now)
                     alert_channel = discord.utils.get(server.text_channels, name = "alerts")
                     await alert_channel.send(channel_name+" is about to start. Get ready.")
 
                 # if the channel hasn't been created yet, create it
-                if event_start_time <= now and event_end_time > now and channel_name not in existing_channels:
+                if event_start_time <= now and event_end_time > now:
                     await server.create_text_channel(channel_name)
                     executed_events.append(channel_name)
             else:
                 now = datetime.now()
                 now = now.replace(second=0, microsecond=0)
-                end_time = event["end"] + timedelta(minutes=1)
+                reminder_time = interface.to_date_time(event["end"]) - timedelta(minutes = 2)
+                end_time = interface.to_date_time(event["end"]) - timedelta(minutes=1)
+
+                if now == reminder_time:
+                    alert_channel = discord.utils.get(server.text_channels, name = "alerts")
+                    await alert_channel.send(channel_name+" is about to end.")
 
                 if now == end_time and channel_name in existing_channels:
-                    executed_events.remove(channel_name) 
+                    # executed_events.remove(channel_name) 
                     end_channel = discord.utils.get(server.text_channels,name = channel_name)
                     await end_channel.delete()
