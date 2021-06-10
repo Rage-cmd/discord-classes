@@ -42,8 +42,7 @@ def channel_names(channel_list):
 async def create_roles(server,all_subject_list):
     subject_col = 2
     for i in range(1,len(all_subject_list)):
-        for subject in all_subject_list[i][subject_col].split(', '):
-            
+        for subject in all_subject_list[i][subject_col].splitlines():#.split(', '):
             roles = await server.fetch_roles()
             
             if not discord.utils.get(roles,name = subject):
@@ -54,7 +53,7 @@ async def create_roles(server,all_subject_list):
 async def on_ready():
     global server
     
-    for guild  in bot.guilds:
+    for guild in bot.guilds:
         if guild.name == server_name:
             server = guild
             break
