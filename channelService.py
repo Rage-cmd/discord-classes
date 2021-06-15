@@ -25,9 +25,10 @@ async def create_channel(server, executed_events, existing_channels):
         existing_channels: list of channels present in the guild.
     """
     present_events = fetch_events()
-    names= [i["name"] for i in present_events]
-    print(names)
+    
     if present_events:
+        names= [i["name"] for i in present_events]
+        print(names)
         for event in present_events:    
             # lower because discord creates channels in lower case only
             # and spaces are replaced with a hyphen
