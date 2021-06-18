@@ -2,8 +2,11 @@ import os
 
 import discord
 from discord.ext import commands, tasks
+
 from dotenv import load_dotenv
 from datetime import datetime
+import re 
+import asyncio
 
 import interface
 import mentorService
@@ -42,8 +45,7 @@ def channel_names(channel_list):
 async def create_roles(server,all_subject_list):
     subject_col = 2
     for i in range(1,len(all_subject_list)):
-        for subject in all_subject_list[i][subject_col].split(', '):
-            
+        for subject in all_subject_list[i][subject_col].splitlines():#.split(', '):
             roles = await server.fetch_roles()
             
             if not discord.utils.get(roles,name = subject):
@@ -54,7 +56,7 @@ async def create_roles(server,all_subject_list):
 async def on_ready():
     global server
     
-    for guild  in bot.guilds:
+    for guild in bot.guilds:
         if guild.name == server_name:
             server = guild
             break
@@ -167,5 +169,42 @@ async def update_subject(ctx, fromSubjectNo, ToSubjectNo):
 async def schedule_link(ctx):
     link = mentorService.get_form_link()
     await ctx.send(f"Here is the link{link}")
+
+@bot.command(name="did")
+async def get_discord_id(ctx):
+    mentor = ctx.author
+    list_wb = await ctx.guild.webhooks()
+    webh = list_wb[0]
+    await mentor.send(f"Your discord ID is {str(mentor.id)}")
+
+@bot.command(name = "register")
+async def register(ctx):
+    mentor = ctx.author
+    await mentorService.ask_info(ctx)
+
+    def check_msg(msg):
+        message = msg.content
+        if not (mentor == msg.author):
+            return False
+        
+        [first_name,last_name,email] = message.split()
+
+        if not first_name.isalpha() or not last_name.isalpha():
+            return False
+        
+        regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+
+        if not re.search(regex,email):
+            return False
+        
+        return True
+
+    try:
+        message = await bot.wait_for("message",check = check_msg, timeout=20)
+        if message:
+            msg = await mentorService.enrol_mentor(ctx,message.content)
+    except asyncio.TimeoutError:
+        await mentor.send("Sorry, you didn't reply in time ⏲️!")
+    
 
 bot.run(TOKEN)
