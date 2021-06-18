@@ -46,11 +46,11 @@ async def enrol_student(ctx, subject_number):
     student_name = ctx.author.name
 
     # if the student had already enrolled for the course, inform them.
-    if is_student_enrolled(student_id,subject_number):
+    if interface.is_present("enrollment",student_id,subject_number):
         return f"{student_name}({ctx.author.discriminator}), Seems like you have already opted for this course"
 
     # If not enrolled then enroll them
-    interface.enrol(student_id, subject_number)
+    interface.insert("enrollment",student_id, subject_number)
     return f"You have been enrolled successfuly :)"
 
 
@@ -68,23 +68,23 @@ def update_student_courses(ctx, fromSubjectNo, ToSubjectNo):
 
     # getting row and column of the student who requested update
     student_col = fromSubjectNo
-    student_row = interface.get_row_index(student_id, student_col)
+    student_row = interface.get_row_index("enrollment",student_id, student_col)
 
     # if students was not enrolled and asked for updation inform them
-    if not is_student_enrolled(student_id, fromSubjectNo):
+    if not interface.is_present("enrollment",student_id, fromSubjectNo):
         return f"Hey{student_name},({ctx.author.discriminator})It seems like {fromSubjectNo} was never chosen by you"
 
     # else remove the student from the old subject and add to the new one
     interface.clear(student_row, student_col)
-    if is_student_enrolled(student_id, ToSubjectNo):
+    if interface.is_present("enrollment",student_id, ToSubjectNo):
         return f"You have been disenrolled from the course {fromSubjectNo} but you were alerady enrolled in {ToSubjectNo}!"
 
-    interface.enrol(student_id, ToSubjectNo)
+    interface.insert("enrollment",student_id, ToSubjectNo)
     return f"You have been disenrolled from the course {fromSubjectNo} and you were enrolled in {ToSubjectNo}!"
 
 
 def is_student_enrolled(student_id, student_col):
-    student_row = interface.get_row_index(student_id, student_col)
+    student_row = interface.get_row_index("enrollment",student_id, student_col)
     # if students was not enrolled and asked for updation inform them
     if student_row == -1:
         return False
