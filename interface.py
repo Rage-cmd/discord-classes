@@ -103,9 +103,21 @@ def subject_count():
     return len(course_sheet.row_values(1))
 
 
-def enrol(student_id, subject_number):
-    row = next_row(course_sheet, subject_number)
-    course_sheet.update_cell(row, subject_number, str(student_id))
+def insert(sheet_name,in_query, query_col,many = False):
+    in_sheet = sheet.worksheet(sheet_name)
+    row = next_row(in_sheet, query_col)
+    if not many:
+        course_sheet.update_cell(row, query_col, str(in_query))
+    else:
+        start = gspread.utils.rowcol_to_a1(row,1)
+        end = gspread.utils.rowcol_to_a1(row,len(in_query))
+        w_range = start + ":" + end
+        
+        cell_list = in_sheet.range(w_range)
+        for i in range(len(cell_list)):
+            cell_list[i].value = in_query[i]
+        
+        in_sheet.update_cells(cell_list)
 
 
 def enrolled_students(subject_number):
@@ -119,8 +131,10 @@ def get_sheet_list(query):
         return student_sheet.get_all_values()
 
 
-def get_row_index(query, column):
-    col_elements = course_sheet.col_values(column)
+def get_row_index(sheet_name,query, column):
+    #get the sheet by name
+    in_sheet = sheet.worksheet(sheet_name)
+    col_elements = in_sheet.col_values(column)
     if str(query) not in col_elements:
         return -1
     return col_elements.index(str(query))+1
@@ -181,6 +195,17 @@ def compare(time1, time2):
 
 def to_date_time(inp_time):
     return calendarService.to_date_time(inp_time)
+
+def is_present(sheet_name,query, query_col):
+    """
+    Checks whether the worksheet with name sheet_name 
+    contains the element 'query' in the column number 'query_col'
+    """
+    res_row = get_row_index(sheet_name,query, query_col)
+    # if students was not enrolled and asked for updation inform them
+    if res_row == -1:
+        return False
+    return True
 
 
 create_enrollment_sheet("enrol_sheet")
