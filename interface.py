@@ -112,7 +112,7 @@ def insert(sheet_name,in_query, query_col,many = False):
         start = gspread.utils.rowcol_to_a1(row,1)
         end = gspread.utils.rowcol_to_a1(row,len(in_query))
         w_range = start + ":" + end
-        
+
         cell_list = in_sheet.range(w_range)
         for i in range(len(cell_list)):
             cell_list[i].value = in_query[i]
@@ -168,13 +168,12 @@ def empty_check(input):
     return True
 
 
-def next_row(sheet, col_number):
-    student_list = course_sheet.col_values(col_number)
-
-    if '' in student_list:
-        return student_list.index('')+1
+def next_row(in_sheet, col_number):
+    col_list = in_sheet.col_values(col_number)
+    if '' in col_list:
+        return col_list.index('')+1
     else:
-        return len(student_list)+1
+        return len(col_list)+1
 
 
 def fetch_events(n):
@@ -207,5 +206,7 @@ def is_present(sheet_name,query, query_col):
         return False
     return True
 
+def is_valid_date(day, month, year):
+    return calendarService.is_valid_date(day,month,year)
 
 create_enrollment_sheet("enrol_sheet")
