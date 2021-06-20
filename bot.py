@@ -1,3 +1,4 @@
+from calendarService import calendar_service
 import os
 
 import discord
@@ -23,7 +24,7 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 total_subjects = interface.subject_count()
 
-server_name = "some server"
+server_name = "myserver"
 server = []
 executed_events = []
 
@@ -167,11 +168,20 @@ async def update_subject(ctx, fromSubjectNo, ToSubjectNo):
 
 @bot.command(name="schedule")
 async def schedule_link(ctx):
+    """
+        Will return a link for the form that can help mentors 
+        schedule lectures
+    """
+
     link = mentorService.get_form_link()
     await ctx.send(f"Here is the link{link}")
 
 @bot.command(name="did")
 async def get_discord_id(ctx):
+    """
+        This command will reply the author with 
+        their discord ID,
+    """
     mentor = ctx.author
     list_wb = await ctx.guild.webhooks()
     webh = list_wb[0]
@@ -179,9 +189,15 @@ async def get_discord_id(ctx):
 
 @bot.command(name = "register")
 async def register(ctx):
+    """
+        This command can be used by a mentor to register themselves.
+        The bot will ask the mentor to reply with their details.
+    """
     mentor = ctx.author
-    await mentorService.ask_info(ctx)
+    await mentorService.ask_info_register(ctx)
 
+    # to make sure that the message was sent by the mentor and 
+    # the inputs are valid
     def check_msg(msg):
         message = msg.content
         if not (mentor == msg.author):
@@ -200,11 +216,44 @@ async def register(ctx):
         return True
 
     try:
+        # if inputs are valid then register the mentor or inform them if registered already
         message = await bot.wait_for("message",check = check_msg, timeout=20)
         if message:
             msg = await mentorService.enrol_mentor(ctx,message.content)
+
     except asyncio.TimeoutError:
+        # if the mentor fails to reply in the given time limit then inform them so
         await mentor.send("Sorry, you didn't reply in time ⏲️!")
+
+@bot.command(name = 'add')
+async def add_subject(ctx):
+    mentor = ctx.author
+    await mentorService.ask_info_add(ctx,"subjects")
+
+    def check_sub(msg):
+        message = msg.content
+        if not (mentor == msg.author):
+            return False
+        
+        subjects = message.splitlines()
+        
+        if not subjects:
+            return False
+        return True 
     
+    def check_date(msg):
+        message = msg.content
+        if not mentor == msg.author:
+            return False
+        day, month ,year = message.split('/')
+        
+        return interface.is_valid_date(int(day),int(month),int(year))
+
+    subjects = await bot.wait_for("message",check = check_sub)
+    if subjects:
+        await mentorService.ask_info_add(ctx,"date")
+        deadline = await bot.wait_for("message",check = check_date)
+        if deadline:
+            await mentorService.add_subject(ctx,subjects,deadline)
 
 bot.run(TOKEN)
