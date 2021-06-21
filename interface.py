@@ -98,19 +98,28 @@ def create_enrollment_sheet(name):
         # header_range = start_header + ":" + end_header
         enrol_sheet.update([subject_list])
 
+# create_enrollment_sheet("new_enroll")
 
 def subject_count():
-    return len(course_sheet.row_values(1))
+    in_sheet = sheet.worksheet("subject_sheet")
+    subjects = in_sheet.col_values(3)
+    length = 0
+    for subject in subjects:
+        print(subject.splitlines())
+        length += len(subject.splitlines())
 
+    return length-1
 
-def insert(sheet_name,in_query, query_col,many = False):
+def insert(sheet_name,in_query, query_col,many = False,begin = 1,row = None):
     in_sheet = sheet.worksheet(sheet_name)
-    row = next_row(in_sheet, query_col)
+    if not row:
+        row = next_row(in_sheet, query_col)
+    
     if not many:
         course_sheet.update_cell(row, query_col, str(in_query))
     else:
-        start = gspread.utils.rowcol_to_a1(row,1)
-        end = gspread.utils.rowcol_to_a1(row,len(in_query))
+        start = gspread.utils.rowcol_to_a1(row,begin)
+        end = gspread.utils.rowcol_to_a1(row,begin + len(in_query)-1)
         w_range = start + ":" + end
 
         cell_list = in_sheet.range(w_range)
@@ -125,11 +134,9 @@ def enrolled_students(subject_number):
 
 
 def get_sheet_list(query):
-    if query == 'mentor':
-        return mentor_sheet.get_all_values()
-    else:
-        return student_sheet.get_all_values()
-
+    in_sheet = sheet.worksheet(query)
+    return in_sheet.get_all_values()
+    
 
 def get_row_index(sheet_name,query, column):
     #get the sheet by name
@@ -209,4 +216,20 @@ def is_present(sheet_name,query, query_col):
 def is_valid_date(day, month, year):
     return calendarService.is_valid_date(day,month,year)
 
-create_enrollment_sheet("enrol_sheet")
+def update_enrollment_sheet(sheet_name):
+    in_sheet = sheet.worksheet(sheet_name)
+    num_new_subjects = subject_count()
+    num_old_subjects = len(in_sheet.row_values(1))
+    print(num_old_subjects,num_new_subjects)
+    if num_old_subjects != num_new_subjects:
+        list_of_subjects = []
+        all_subjects = [row[2] for row in get_sheet_list("subject_sheet")]
+        for subjects in all_subjects:
+            list_of_subjects.extend(subjects.splitlines())
+        
+        to_insert = list_of_subjects[num_old_subjects+1:]
+        insert(sheet_name,to_insert,1,many = True,begin = num_old_subjects+1,row = 1)
+
+update_enrollment_sheet("enrollment")
+
+# create_enrollment_sheet("enrol_sheet")
