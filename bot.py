@@ -24,7 +24,7 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 total_subjects = interface.subject_count()
 
-server_name = "myserver"
+server_name = "some server"
 server = []
 executed_events = []
 
@@ -61,7 +61,7 @@ async def on_ready():
         if guild.name == server_name:
             server = guild
             break
-    all_subject_list = interface.get_sheet_list('mentor')
+    all_subject_list = interface.get_sheet_list('subject_sheet')
 
     await create_roles(server,all_subject_list)
 
