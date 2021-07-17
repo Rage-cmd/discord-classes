@@ -1,3 +1,4 @@
+from calendarService import calendar_service
 import os
 
 import discord
@@ -42,14 +43,25 @@ def channel_names(channel_list):
     return names
 
 
-async def create_roles(server,all_subject_list):
-    subject_col = 2
-    for i in range(1,len(all_subject_list)):
-        for subject in all_subject_list[i][subject_col].splitlines():#.split(', '):
-            roles = await server.fetch_roles()
+# async def create_roles(server,all_subject_list):
+#     subject_col = 2
+#     for i in range(1,len(all_subject_list)):
+#         for subject in all_subject_list[i][subject_col].splitlines():#.split(', '):
+#             roles = await server.fetch_roles()
             
-            if not discord.utils.get(roles,name = subject):
-                await server.create_role(name = subject, mentionable = True)
+#             if not discord.utils.get(roles,name = subject):
+#                 await server.create_role(name = subject, mentionable = True)
+
+async def create_roles(server,subjects):
+    created_roles = []
+    for subject in subjects:
+        roles = await server.fetch_roles()
+        if not discord.utils.get(roles,name = subject):
+            role  = await server.create_role(name = subject, mentionable = True)
+            created_roles.append(role)
+    
+    return created_roles
+        
 
 #capture the server(global variable) when the bot gets ready
 @bot.event
@@ -60,9 +72,14 @@ async def on_ready():
         if guild.name == server_name:
             server = guild
             break
-    all_subject_list = interface.get_sheet_list('mentor')
 
-    await create_roles(server,all_subject_list)
+    # roles = await server.fetch_roles()
+    # for role in roles:
+    #     print(role.name)
+    #     if role.name != "philbert" and role.name != "@everyone" and role.name != "Interaction":
+    #         await role.delete()
+
+    check_deadlines.start()
 
     print(f'{bot.user.name} is running')
 
@@ -81,6 +98,14 @@ async def create_channels():
 
     await channelService.create_channel(server, executed_events, existing_channels)
 
+@tasks.loop(seconds = 15)
+async def check_deadlines():
+    global server
+    subjects, subject_ids = mentorService.subjects_today()
+    if subjects:
+        roles = await create_roles(server,subjects)
+        await mentorService.set_deadline(server,roles,subject_ids)
+
 
 # the loop should start only after the bot is set up
 @create_channels.before_loop
@@ -89,6 +114,8 @@ async def before_my_task():
     await bot.wait_until_ready()
 
 create_channels.start()
+
+# at this point we are sure that the bot is ready
 
 @bot.command(name='create-channel')
 @commands.has_role('admin')
@@ -167,11 +194,20 @@ async def update_subject(ctx, fromSubjectNo, ToSubjectNo):
 
 @bot.command(name="schedule")
 async def schedule_link(ctx):
+    """
+        Will return a link for the form that can help mentors 
+        schedule lectures
+    """
+
     link = mentorService.get_form_link()
     await ctx.send(f"Here is the link{link}")
 
 @bot.command(name="did")
 async def get_discord_id(ctx):
+    """
+        This command will reply the author with 
+        their discord ID,
+    """
     mentor = ctx.author
     list_wb = await ctx.guild.webhooks()
     webh = list_wb[0]
@@ -179,9 +215,15 @@ async def get_discord_id(ctx):
 
 @bot.command(name = "register")
 async def register(ctx):
+    """
+        This command can be used by a mentor to register themselves.
+        The bot will ask the mentor to reply with their details.
+    """
     mentor = ctx.author
-    await mentorService.ask_info(ctx)
+    await mentorService.ask_info_register(ctx)
 
+    # to make sure that the message was sent by the mentor and 
+    # the inputs are valid
     def check_msg(msg):
         message = msg.content
         if not (mentor == msg.author):
@@ -200,11 +242,44 @@ async def register(ctx):
         return True
 
     try:
+        # if inputs are valid then register the mentor or inform them if registered already
         message = await bot.wait_for("message",check = check_msg, timeout=20)
         if message:
             msg = await mentorService.enrol_mentor(ctx,message.content)
+
     except asyncio.TimeoutError:
+        # if the mentor fails to reply in the given time limit then inform them so
         await mentor.send("Sorry, you didn't reply in time ⏲️!")
+
+@bot.command(name = 'add')
+async def add_subject(ctx):
+    mentor = ctx.author
+    await mentorService.ask_info_add(ctx,"subjects")
+
+    def check_sub(msg):
+        message = msg.content
+        if not (mentor == msg.author):
+            return False
+        
+        subjects = message.splitlines()
+        
+        if not subjects:
+            return False
+        return True 
     
+    def check_date(msg):
+        message = msg.content
+        if not mentor == msg.author:
+            return False
+        day, month ,year = message.split('/')
+        
+        return interface.is_valid_date(int(day),int(month),int(year))
+
+    subjects = await bot.wait_for("message",check = check_sub)
+    if subjects:
+        await mentorService.ask_info_add(ctx,"date")
+        deadline = await bot.wait_for("message",check = check_date)
+        if deadline:
+            await mentorService.add_subject(ctx,subjects,deadline)
 
 bot.run(TOKEN)

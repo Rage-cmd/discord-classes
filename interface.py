@@ -98,21 +98,29 @@ def create_enrollment_sheet(name):
         # header_range = start_header + ":" + end_header
         enrol_sheet.update([subject_list])
 
+# create_enrollment_sheet("new_enroll")
 
 def subject_count():
-    return len(course_sheet.row_values(1))
+    in_sheet = sheet.worksheet("subject_sheet")
+    subjects = in_sheet.col_values(3)
+    length = 0
+    for subject in subjects:
+        length += len(subject.splitlines())
 
+    return length-1
 
-def insert(sheet_name,in_query, query_col,many = False):
+def insert(sheet_name,in_query, query_col,many = False,begin = 1,row = None):
     in_sheet = sheet.worksheet(sheet_name)
-    row = next_row(in_sheet, query_col)
+    if not row:
+        row = next_row(in_sheet, query_col)
+    
     if not many:
         course_sheet.update_cell(row, query_col, str(in_query))
     else:
-        start = gspread.utils.rowcol_to_a1(row,1)
-        end = gspread.utils.rowcol_to_a1(row,len(in_query))
+        start = gspread.utils.rowcol_to_a1(row,begin)
+        end = gspread.utils.rowcol_to_a1(row,begin + len(in_query)-1)
         w_range = start + ":" + end
-        
+
         cell_list = in_sheet.range(w_range)
         for i in range(len(cell_list)):
             cell_list[i].value = in_query[i]
@@ -125,11 +133,9 @@ def enrolled_students(subject_number):
 
 
 def get_sheet_list(query):
-    if query == 'mentor':
-        return mentor_sheet.get_all_values()
-    else:
-        return student_sheet.get_all_values()
-
+    in_sheet = sheet.worksheet(query)
+    return in_sheet.get_all_values()
+    
 
 def get_row_index(sheet_name,query, column):
     #get the sheet by name
@@ -168,13 +174,12 @@ def empty_check(input):
     return True
 
 
-def next_row(sheet, col_number):
-    student_list = course_sheet.col_values(col_number)
-
-    if '' in student_list:
-        return student_list.index('')+1
+def next_row(in_sheet, col_number):
+    col_list = in_sheet.col_values(col_number)
+    if '' in col_list:
+        return col_list.index('')+1
     else:
-        return len(student_list)+1
+        return len(col_list)+1
 
 
 def fetch_events(n):
@@ -207,5 +212,40 @@ def is_present(sheet_name,query, query_col):
         return False
     return True
 
+def is_valid_date(day, month, year):
+    return calendarService.is_valid_date(day,month,year)
 
-create_enrollment_sheet("enrol_sheet")
+def update_enrollment_sheet(sheet_name):
+    in_sheet = sheet.worksheet(sheet_name)
+    num_new_subjects = subject_count()
+    num_old_subjects = len(in_sheet.row_values(1))
+    if num_old_subjects != num_new_subjects:
+        list_of_subjects = []
+        all_subjects = [row[2] for row in get_sheet_list("subject_sheet")]
+        for subjects in all_subjects:
+            list_of_subjects.extend(subjects.splitlines())
+        
+        to_insert = list_of_subjects[num_old_subjects+1:]
+        insert(sheet_name,to_insert,1,many = True,begin = num_old_subjects+1,row = 1)
+
+def get_deadlines():
+    sheet_name = "subject_sheet"
+    # in_sheet = sheet.worksheet(sheet_name)
+    sheet_list = get_sheet_list(sheet_name)
+    
+    deadlines = {}
+    start = 1
+    for row in sheet_list[1:]:
+        subjects = row[2].splitlines()
+        deadlines[row[3]] = list(zip(subjects,range(start,start+len(subjects))))
+        start += len(subjects)
+
+    return deadlines
+
+deadlines = get_deadlines()
+print(deadlines)
+
+update_enrollment_sheet("enrollment")
+
+
+# create_enrollment_sheet("enrol_sheet")

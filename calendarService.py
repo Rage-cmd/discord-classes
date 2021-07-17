@@ -126,6 +126,28 @@ def to_date_time(inp_time):
         inp_time["minute"]
     )    
 
+def is_valid_date(day,month,year):
+    """
+    Checks if the input date is valid or not.
+    Parameters:
+        day: int
+        month: int
+        year: int
+
+    Examples:
+        print(is_valid_date(1,12,2000))
+        OUTPUT: True
+
+        print(is_valid_date(1,13,2000))
+        OUTPUT: False
+    """
+    valid_date = True
+    try:
+        datetime.datetime(year,month,day)
+    except ValueError:
+        valid_date = False
+    
+    return valid_date
 # create_event("abc")
 # n_events(5)
 # print(xyz)
