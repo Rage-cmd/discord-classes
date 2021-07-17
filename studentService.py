@@ -109,7 +109,6 @@ def is_before_deadline(subject_num):
             if i == int(subject_num):
                 now = datetime.today().date()
                 deadline = datetime.strptime(row[3],"%d/%m/%Y").date()
-                print(now,deadline)
                 if now < deadline or now == deadline:
                     return True
 

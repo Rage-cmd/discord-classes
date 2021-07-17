@@ -1,8 +1,8 @@
 import asyncio
 import discord
 import interface
-import datetime
-
+from datetime import datetime
+# import bot 
 link = "https://docs.google.com/forms/d/e/1FAIpQLSfYuSKuXeXy_G5u_-vhaYI9eXXBQk62cBvx1jw2605sf31CQw/viewform"
 
 
@@ -72,6 +72,34 @@ async def add_subject(ctx,subjects,deadline):
                   ]
     interface.insert("subject_sheet",insert_list,2,many=True)
     await ctx.author.send("Subject(s) added! 😃")
+
+def subjects_today():
+    
+    deadlines = interface.get_deadlines()
+    today = datetime.today().date().strftime("%d/%m/%Y")
+    
+    subjects = []
+    subject_ids = []
+
+    if today in deadlines:
+        for subject in deadlines[today]:
+            subjects.append(subject[0])
+            subject_ids.append(subject[1])
+
+    return subjects,subject_ids
+
+async def set_deadline(server,roles,subject_ids):
+
+    in_sheet = interface.get_sheet_list("enrollment")
+    for role in roles:
+        print(role.name)
+    # subjects = [item[0] for item in deadlines[today]]
+    # for subject in deadlines[today]:
+    #     student_ids = in_sheet.col_values(subject[1])
+    #     for student_id in student_ids:
+    #         user = await server.fetch_member(int(student_id))
+    #         await user.add_roles([role])
+
 
 # needs context
 

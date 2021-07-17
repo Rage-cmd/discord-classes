@@ -105,7 +105,6 @@ def subject_count():
     subjects = in_sheet.col_values(3)
     length = 0
     for subject in subjects:
-        print(subject.splitlines())
         length += len(subject.splitlines())
 
     return length-1
@@ -220,7 +219,6 @@ def update_enrollment_sheet(sheet_name):
     in_sheet = sheet.worksheet(sheet_name)
     num_new_subjects = subject_count()
     num_old_subjects = len(in_sheet.row_values(1))
-    print(num_old_subjects,num_new_subjects)
     if num_old_subjects != num_new_subjects:
         list_of_subjects = []
         all_subjects = [row[2] for row in get_sheet_list("subject_sheet")]
@@ -230,6 +228,24 @@ def update_enrollment_sheet(sheet_name):
         to_insert = list_of_subjects[num_old_subjects+1:]
         insert(sheet_name,to_insert,1,many = True,begin = num_old_subjects+1,row = 1)
 
+def get_deadlines():
+    sheet_name = "subject_sheet"
+    # in_sheet = sheet.worksheet(sheet_name)
+    sheet_list = get_sheet_list(sheet_name)
+    
+    deadlines = {}
+    start = 1
+    for row in sheet_list[1:]:
+        subjects = row[2].splitlines()
+        deadlines[row[3]] = list(zip(subjects,range(start,start+len(subjects))))
+        start += len(subjects)
+
+    return deadlines
+
+deadlines = get_deadlines()
+print(deadlines)
+
 update_enrollment_sheet("enrollment")
+
 
 # create_enrollment_sheet("enrol_sheet")
