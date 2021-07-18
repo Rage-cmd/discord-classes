@@ -56,7 +56,7 @@ async def enrol_student(ctx, subject_number):
     #     await ctx.guild.create_role(name=f"{subject_number}")
     # role = discord.utils.get(ctx.guild.roles, name=f"{subject_number}")
     # await ctx.author.add_roles(role)
-    await add_role(ctx, f"{subject_number}")
+    await add_role(ctx, f"{interface.cell_value(1,int(subject_number))}")
     # If not enrolled then enroll them
     interface.insert("enrollment", student_id, subject_number)
     return f"You have been enrolled successfuly :)"
@@ -74,17 +74,17 @@ async def remove_role(ctx, role_name):
     if(role!=None):
         await ctx.author.remove_roles(role)
 
-async def update_student_courses(ctx, fromSubjectNo, ToSubjectNo):
+async def update_student_courses(ctx, fromSubjectNo, toSubjectNo):
     # check the validity of inputs
     msg = ""
-    if int(fromSubjectNo) not in range(1, total_subjects + 1) or int(ToSubjectNo) not in range(1, total_subjects + 1):
+    if int(fromSubjectNo) not in range(1, total_subjects + 1) or int(toSubjectNo) not in range(1, total_subjects + 1):
         return f"Either one or both of the numbers are not associated with any subject :("
 
     # check if the deadline has passed or not
-    if not is_before_deadline(fromSubjectNo) or not is_before_deadline(ToSubjectNo):
+    if not is_before_deadline(fromSubjectNo) or not is_before_deadline(toSubjectNo):
         return f"Deadline for the requested subject(s) has passed!"
 
-    if fromSubjectNo == ToSubjectNo:
+    if fromSubjectNo == toSubjectNo:
         return "Done"
 
     student_name = ctx.author.name
@@ -101,13 +101,13 @@ async def update_student_courses(ctx, fromSubjectNo, ToSubjectNo):
 
     # else remove the student from the old subject and add to the new one
     interface.clear(student_row, student_col)
-    await remove_role(ctx, f"{fromSubjectNo}")
-    if interface.is_present("enrollment", student_id, ToSubjectNo):
-        return f"You have been disenrolled from the course {fromSubjectNo} but you were alerady enrolled in {ToSubjectNo}!"
+    await remove_role(ctx, f"{interface.cell_value(1,int(fromSubjectNo))}")
+    if interface.is_present("enrollment", student_id, toSubjectNo):
+        return f"You have been disenrolled from the course {fromSubjectNo} but you were alerady enrolled in {toSubjectNo}!"
 
-    interface.insert("enrollment", student_id, ToSubjectNo)
-    await add_role(ctx,f"{ToSubjectNo}")
-    return f"You have been disenrolled from the course {fromSubjectNo} and you were enrolled in {ToSubjectNo}!"
+    interface.insert("enrollment", student_id, toSubjectNo)
+    await add_role(ctx,f"{interface.cell_value(1,int(toSubjectNo))}")
+    return f"You have been disenrolled from the course {fromSubjectNo} and you were enrolled in {toSubjectNo}!"
 
 
 def is_student_enrolled(student_id, student_col):
