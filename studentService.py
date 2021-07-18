@@ -51,11 +51,6 @@ async def enrol_student(ctx, subject_number):
     if interface.is_present("enrollment", student_id, subject_number):
         return f"{student_name}({ctx.author.discriminator}), Seems like you have already opted for this course"
     
-    # role = discord.utils.get(ctx.guild.roles, name=f"{subject_number}")
-    # if role == None:
-    #     await ctx.guild.create_role(name=f"{subject_number}")
-    # role = discord.utils.get(ctx.guild.roles, name=f"{subject_number}")
-    # await ctx.author.add_roles(role)
     await add_role(ctx, f"{interface.cell_value(1,int(subject_number))}")
     # If not enrolled then enroll them
     interface.insert("enrollment", student_id, subject_number)
