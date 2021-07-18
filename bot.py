@@ -159,7 +159,7 @@ async def update_subject(ctx, fromSubjectNo, ToSubjectNo):
             fromSubjectNo: The subject which was currently opted by them
             ToSubjectNo:   The subject which they want to update to
     """
-    msg = studentService.update_student_courses(ctx, fromSubjectNo,ToSubjectNo)
+    msg = await studentService.update_student_courses(ctx, fromSubjectNo,ToSubjectNo)
     await ctx.send(msg)
 
 
