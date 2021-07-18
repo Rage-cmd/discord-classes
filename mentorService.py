@@ -125,13 +125,17 @@ async def set_deadline(server,roles,subject_ids):
 # TO IMPLEMENT: students can not add/update subjects after deadline
 
 
-async def register_mentor(ctx, username=None, discriminator=None):
-    if(username==None or discriminator == None):
-        return f"Wrong Format! Please enter in following format: \n```!register_mentor <username> <tag>```"
+async def register_mentor(ctx, payload):
+    formatstr = f'```!register_mentor "<username>#<tag>"```'
+    paylist = payload.split('#')
+    if(len(paylist) < 2 or paylist[0]=="" or paylist[1] == ""):
+        return f"Wrong Format! Please enter in following format: \n" + formatstr
+    username = paylist[0]
+    discriminator = paylist[1]
     member =  discord.utils.get(ctx.guild.members, name=username, discriminator=discriminator)
     role = discord.utils.get(ctx.guild.roles, name="Mentor")
     if(member != None):
         await member.add_roles(role)
         return f"Mentor role successfully assigned to {username} #{discriminator}"
     else:
-        return f"Some Error Occured, Please try again later!"
+        return f"Some Error Occured, Please check the username and discriminator or try again later! The format is:\n" + formatstr

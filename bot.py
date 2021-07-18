@@ -292,6 +292,6 @@ async def add_subject(ctx):
 
 @bot.command(name='register_mentor')
 @commands.has_role('admin')
-async def registerMentor(ctx, username=None, discriminator=None):
-    await ctx.send(await mentorService.register_mentor(ctx,username, discriminator))
+async def registerMentor(ctx, payload=""):
+    await ctx.send(await mentorService.register_mentor(ctx,payload))
 bot.run(TOKEN)
