@@ -13,6 +13,7 @@ import interface
 import mentorService
 import studentService
 import channelService
+import copy
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -63,6 +64,11 @@ async def create_roles(server,subjects):
     return created_roles
         
 
+async def createRole(guild, role_name):
+    role = guild.get(guild.roles, name=role_name)
+    if(role==None):
+        await guild.create_role(name=role_name)
+
 #capture the server(global variable) when the bot gets ready
 @bot.event
 async def on_ready():
@@ -82,6 +88,8 @@ async def on_ready():
     check_deadlines.start()
 
     print(f'{bot.user.name} is running')
+    createRole(server,"Mentor")
+
 
 
 # The asynchronous fucntion create_channels will run every minute
@@ -282,4 +290,17 @@ async def add_subject(ctx):
         if deadline:
             await mentorService.add_subject(ctx,subjects,deadline)
 
+@bot.command(name='register_mentor')
+@commands.has_role('admin')
+async def registerMentor(ctx, username=None, discriminator=None):
+    if(username==None or discriminator == None):
+        await ctx.send(f"```Wrong Format! Please enter in following format: \n!register_mentor <username> <tag>```")
+    member =  discord.utils.get(ctx.guild.members, name=username, discriminator=discriminator)
+    role = discord.utils.get(ctx.guild.roles, name="Mentor")
+    if(member != None):
+        await member.add_roles(role)
+        await ctx.send(f"Mentor role successfully assigned to {username} #{discriminator}")
+    else:
+        await ctx.send(f"Some Error Occured, Please try again later!")
+    # print(ctx.guild.roles)
 bot.run(TOKEN)
