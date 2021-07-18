@@ -293,14 +293,5 @@ async def add_subject(ctx):
 @bot.command(name='register_mentor')
 @commands.has_role('admin')
 async def registerMentor(ctx, username=None, discriminator=None):
-    if(username==None or discriminator == None):
-        await ctx.send(f"```Wrong Format! Please enter in following format: \n!register_mentor <username> <tag>```")
-    member =  discord.utils.get(ctx.guild.members, name=username, discriminator=discriminator)
-    role = discord.utils.get(ctx.guild.roles, name="Mentor")
-    if(member != None):
-        await member.add_roles(role)
-        await ctx.send(f"Mentor role successfully assigned to {username} #{discriminator}")
-    else:
-        await ctx.send(f"Some Error Occured, Please try again later!")
-    # print(ctx.guild.roles)
+    await ctx.send(await mentorService.register_mentor(ctx,username, discriminator))
 bot.run(TOKEN)

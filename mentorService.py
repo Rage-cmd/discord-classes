@@ -123,3 +123,15 @@ async def set_deadline(server,roles,subject_ids):
 
 # #####################
 # TO IMPLEMENT: students can not add/update subjects after deadline
+
+
+async def register_mentor(ctx, username=None, discriminator=None):
+    if(username==None or discriminator == None):
+        return f"Wrong Format! Please enter in following format: \n```!register_mentor <username> <tag>```"
+    member =  discord.utils.get(ctx.guild.members, name=username, discriminator=discriminator)
+    role = discord.utils.get(ctx.guild.roles, name="Mentor")
+    if(member != None):
+        await member.add_roles(role)
+        return f"Mentor role successfully assigned to {username} #{discriminator}"
+    else:
+        return f"Some Error Occured, Please try again later!"
