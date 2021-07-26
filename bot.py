@@ -183,7 +183,7 @@ async def schedule_link(ctx):
         schedule lectures
     """
 
-    link = mentorService.get_form_link()
+    link = mentorService.get_form_link('schedule')
     await ctx.send(f"Here is the link{link}")
 
 @bot.command(name="add_subject")
