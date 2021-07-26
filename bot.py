@@ -177,7 +177,8 @@ async def list_subjects(ctx):
     """
         Sends a message with the list of all subjects along with mentor names
     """
-    emb = await studentService.get_subject_list_emb(ctx)
+    message = await studentService.get_subject_list_emb(ctx)
+    emb = discord.Embed(title = 'The following are the upcoming courses along with their mentors and the deadline for registration\n', description = message)
     await ctx.send(content=f'Available subjects are\n', embed=emb)
 
 

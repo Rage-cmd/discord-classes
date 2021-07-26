@@ -11,8 +11,8 @@ async def get_subject_list_emb(ctx):
     list_of_all_subjects = interface.get_sheet_list('subject_sheet')
 
     # initialising an embed
-    header_message = "The following courses along with their mentors are given below:"
-    emb = discord.Embed(title="Courses Offered", description=header_message)
+    message = "```" + "Sr. no.".center(8,' ') + "Course".center(15,' ')+ "Mentor".center(15,' ')+ "Deadline".center(15,' ')+ "\n"
+    # emb = discord.Embed(title="Courses Offered", description=header_message)
 
     serial_no = 1
 
@@ -23,15 +23,15 @@ async def get_subject_list_emb(ctx):
         # for all the subjects of the mentor
         subject_col = 2
         # split(', '):
+        mentorobj = await guild.fetch_member(list_of_all_subjects[i][1])
         for subject in list_of_all_subjects[i][subject_col].splitlines():
             # add it in the embed and increment the serial no.
-            value_emb = value_emb + str(serial_no) + '. ' + subject + "\n"
+            message = message + str(serial_no).center(8,' ') + str(subject).center(15,' ') + str(mentorobj.name).center(15, ' ') + str(list_of_all_subjects[i][3]).center(15,' ') + "\n"
             serial_no += 1
-
+    
         # fetching the mentor of the subjects iterated in the previous loop
-        mentorobj = await guild.fetch_member(list_of_all_subjects[i][1])
-        emb.add_field(name=mentorobj.name, value=value_emb, inline=False)
-    return emb
+    message = message + "```"
+    return message
 
 
 async def enrol_student(ctx, subject_number):
