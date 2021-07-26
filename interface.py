@@ -241,11 +241,11 @@ def get_deadlines():
         start += len(subjects)
 
     return deadlines
+    
+
 
 deadlines = get_deadlines()
 print(deadlines)
-
-update_enrollment_sheet("enrollment")
 
 
 # create_enrollment_sheet("enrol_sheet")

@@ -86,9 +86,10 @@ async def on_ready():
     #         await role.delete()
 
     check_deadlines.start()
+    udpate_EnrollmentSheet.start()
 
     print(f'{bot.user.name} is running')
-    createRole(server,"Mentor")
+    await createRole(server,"Mentor")
 
 
 
@@ -105,6 +106,10 @@ async def create_channels():
     existing_channels = channel_names(server.channels)
 
     await channelService.create_channel(server, executed_events, existing_channels)
+
+@tasks.loop(minutes=1)
+async def udpate_EnrollmentSheet():
+    interface.update_enrollment_sheet("enrollment")
 
 @tasks.loop(seconds = 15)
 async def check_deadlines():
