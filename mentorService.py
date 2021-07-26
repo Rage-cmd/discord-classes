@@ -1,13 +1,17 @@
 import asyncio
 import discord
 import interface
-from datetime import datetime
+import datetime
 # import bot 
-link = "https://docs.google.com/forms/d/e/1FAIpQLSfYuSKuXeXy_G5u_-vhaYI9eXXBQk62cBvx1jw2605sf31CQw/viewform"
+link1 = "https://docs.google.com/forms/d/e/1FAIpQLSfYuSKuXeXy_G5u_-vhaYI9eXXBQk62cBvx1jw2605sf31CQw/viewform"
 
+link2 = "https://docs.google.com/forms/d/e/1FAIpQLSdBxbScZVE91PME2BUVLeAs8cZcoBR2yBzc1tl9ok-fE5PEgQ/viewform"
 
-def get_form_link():
-    return link
+def get_form_link(arg):
+    if arg == 'add_subject':
+        return link2
+    if arg == 'schedule':
+        return link1
 
 
 async def ask_info_register(ctx):
@@ -76,7 +80,7 @@ async def add_subject(ctx,subjects,deadline):
 def subjects_today():
     
     deadlines = interface.get_deadlines()
-    today = datetime.today().date().strftime("%d/%m/%Y")
+    today = datetime.datetime.today().date().strftime("%d/%m/%Y")
     
     subjects = []
     subject_ids = []

@@ -65,7 +65,7 @@ async def create_roles(server,subjects):
         
 
 async def createRole(guild, role_name):
-    role = guild.get(guild.roles, name=role_name)
+    role = discord.utils.get(guild.roles, name=role_name)
     if(role==None):
         await guild.create_role(name=role_name)
 
@@ -141,36 +141,6 @@ async def create_channel(ctx, channel_name="general"):
         await guild.create_text_channel(channel_name)
 
 
-@bot.command(name='create-private-text-channel')
-@commands.has_role('moderator')
-async def create_private_channel(ctx, channel_name, category, caller_role):
-    guild = ctx.guild
-    role = discord.utils.get(guild.roles, name=caller_role)
-    category_need = discord.utils.get(guild.categories, name=category)
-
-    for cat in guild.categories:
-        print(f'{cat.name}\n')
-
-    if not role:
-        await ctx.send(f'Uh oh, there is no role named {caller_role}')
-
-    else:
-
-        if not category_need:
-            await guild.create_category(category)
-
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.get_role(role.id): discord.PermissionOverwrite(read_messages=True),
-        }
-
-        required_cat = discord.utils.get(guild.categories, name=category)
-
-        print("after overwrites")
-        await guild.create_text_channel(channel_name, overwrites=overwrites, category=required_cat)
-        print("done creating")
-
-
 # Sends a message with the list of all subjects along with mentor names
 @bot.command(name='list')
 async def list_subjects(ctx):
@@ -215,6 +185,16 @@ async def schedule_link(ctx):
     link = mentorService.get_form_link()
     await ctx.send(f"Here is the link{link}")
 
+@bot.command(name="add_subject")
+async def add_subs(ctx):
+    """         
+        Will return a link for the form that can help mentors 
+        add subjects
+    """
+
+    link = mentorService.get_sub_link()
+    await ctx.send(f"Here is the link{link}")
+
 @bot.command(name="did")
 async def get_discord_id(ctx):
     """
@@ -222,8 +202,6 @@ async def get_discord_id(ctx):
         their discord ID,
     """
     mentor = ctx.author
-    list_wb = await ctx.guild.webhooks()
-    webh = list_wb[0]
     await mentor.send(f"Your discord ID is {str(mentor.id)}")
 
 @bot.command(name = "register")

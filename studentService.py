@@ -58,13 +58,18 @@ async def enrol_student(ctx, subject_number):
 
 
 async def add_role(ctx,role_name):
+    role_name = role_name.lower()
     role = discord.utils.get(ctx.guild.roles, name=role_name)
-    if role == None:
+    if not role:
         await ctx.guild.create_role(name=role_name)
     role = discord.utils.get(ctx.guild.roles, name=role_name)
-    await ctx.author.add_roles(role)
+    if role:
+        await ctx.author.add_roles(role)
+    else:
+        print("NO Role")
 
 async def remove_role(ctx, role_name):
+    role_name = role_name.lower()
     role = discord.utils.get(ctx.guild.roles, name=role_name)
     if(role!=None):
         await ctx.author.remove_roles(role)
@@ -123,7 +128,7 @@ def is_before_deadline(subject_num):
             # print(subject,type(i),type(subject_num))
             if i == int(subject_num):
                 now = datetime.today().date()
-                deadline = datetime.strptime(row[3],"%d/%m/%Y").date()
+                deadline = datetime.strptime(row[3],"%m/%d/%Y").date()
                 if now < deadline or now == deadline:
                     return True
 

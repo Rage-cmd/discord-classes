@@ -16,7 +16,7 @@ sheet = client.open('Responses')
 
 mentor_sheet = sheet.get_worksheet(0)
 student_sheet = sheet.get_worksheet(1)
-course_sheet = sheet.get_worksheet(2)
+course_sheet = sheet.worksheet("enrollment")
 schedule_sheet = sheet.get_worksheet(3)
 
 # testing-sheet
