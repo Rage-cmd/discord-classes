@@ -142,7 +142,7 @@ async def create_channel(ctx, channel_name="general"):
 
 
 # Sends a message with the list of all subjects along with mentor names
-@bot.command(name='list')
+@bot.command(name='list_sessions', help="Returns the list of sessions that registered by mentors.")
 async def list_subjects(ctx):
     """
         Sends a message with the list of all subjects along with mentor names
@@ -152,7 +152,7 @@ async def list_subjects(ctx):
     await ctx.send(content=f'Available subjects are\n', embed=emb)
 
 
-@bot.command(name='choose')
+@bot.command(name='enroll', help="Enrolls student into a course. Format- !enroll <subject number>")
 async def choose_subject(ctx, subject_number):
     """
         This functions helps students to opt for subjects using the number
@@ -162,7 +162,7 @@ async def choose_subject(ctx, subject_number):
     await ctx.send(msg)
 
 
-@bot.command(name='update')
+@bot.command(name='update_enrollment', help="Updates the enrollment of a student from one course to other. Format- !update_enrollment <from_subject_number> <to_subject_number>")
 async def update_subject(ctx, fromSubjectNo, ToSubjectNo):
     """
         If a student wants to change their selected subject before the timeline
@@ -176,7 +176,7 @@ async def update_subject(ctx, fromSubjectNo, ToSubjectNo):
     await ctx.send(msg)
 
 
-@bot.command(name="schedule")
+@bot.command(name="schedule_session",help="Schedules a registered session for a mentor")
 async def schedule_link(ctx):
     """
         Will return a link for the form that can help mentors 
@@ -186,7 +186,7 @@ async def schedule_link(ctx):
     link = mentorService.get_form_link('schedule')
     await ctx.send(f"Here is the link{link}")
 
-@bot.command(name="add_subject")
+@bot.command(name="register_session", help="Starts registraion for a session for students")
 async def add_subs(ctx):
     """         
         Will return a link for the form that can help mentors 
@@ -196,7 +196,7 @@ async def add_subs(ctx):
     link = mentorService.get_sub_link()
     await ctx.send(f"Here is the link{link}")
 
-@bot.command(name="did")
+@bot.command(name="get_discordId", help="Returns discord Id in Personal Inbox")
 async def get_discord_id(ctx):
     """
         This command will reply the author with 
@@ -205,7 +205,7 @@ async def get_discord_id(ctx):
     mentor = ctx.author
     await mentor.send(f"Your discord ID is {str(mentor.id)}")
 
-@bot.command(name = "register")
+@bot.command(name = "self_register", help= "mentors can self-register themselves once they get Mentor role")
 async def register(ctx):
     """
         This command can be used by a mentor to register themselves.
@@ -274,7 +274,7 @@ async def add_subject(ctx):
         if deadline:
             await mentorService.add_subject(ctx,subjects,deadline)
 
-@bot.command(name='register_mentor')
+@bot.command(name='register_mentor', help="assigns role of Mentor to mentors by admin")
 @commands.has_role('admin')
 async def registerMentor(ctx, payload=""):
     await ctx.send(await mentorService.register_mentor(ctx,payload))
