@@ -13,14 +13,13 @@ def fetch_events(n=5):
 #     """
 #     present_events = fetch_events()
 #     return True if present_events else False
-async def create_private_channel(ctx, channel_name, category, caller_role):
-    print("Creating channel")
+async def create_private_channel(ctx, channel_name, category, caller_role,type_c):
     guild = ctx
     role = discord.utils.get(guild.roles, name=caller_role)
     category_need = discord.utils.get(guild.categories, name=category)
 
-    for cat in guild.categories:
-        print(f'{cat.name}\n')
+    # for cat in guild.categories:
+    #     print(f'{cat.name}\n')
 
     if not role:
         print("returning without creating")
@@ -31,16 +30,21 @@ async def create_private_channel(ctx, channel_name, category, caller_role):
         if not category_need:
             await guild.create_category(category)
 
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.get_role(role.id): discord.PermissionOverwrite(read_messages=True),
-        }
-
         required_cat = discord.utils.get(guild.categories, name=category)
 
-        print("after overwrites")
-        await guild.create_text_channel(channel_name, overwrites=overwrites, category=required_cat)
-        print("done creating")
+        if type_c == "text":
+            overwrites_text = {
+                guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                guild.get_role(role.id): discord.PermissionOverwrite(read_messages=True),
+            }
+            await guild.create_text_channel(channel_name, overwrites=overwrites_text, category=required_cat)
+
+        if type_c == "voice":
+            overwrites_voice = {
+                guild.default_role: discord.PermissionOverwrite(connect=False,view_channel=False),
+                guild.get_role(role.id): discord.PermissionOverwrite(connect=True,view_channel=True),
+            }
+            await guild.create_voice_channel(channel_name, overwrites=overwrites_voice, category=required_cat)
 
 async def create_channel(server, executed_events, existing_channels):
     """
@@ -56,7 +60,6 @@ async def create_channel(server, executed_events, existing_channels):
     
     if present_events:
         names= [i["name"] for i in present_events]
-        print(names)
         for event in present_events:    
             # lower because discord creates channels in lower case only
             # and spaces are replaced with a hyphen
@@ -82,9 +85,11 @@ async def create_channel(server, executed_events, existing_channels):
 
                 # if the channel hasn't been created yet, create it
                 if reminder_time <= now and event_end_time > now:
-                    await create_private_channel(server,channel_name + "-doubt-channel",channel_name,channel_name)
-                    await create_private_channel(server,channel_name + "-voice-channel",channel_name,channel_name)
-                    await create_private_channel(server,channel_name + "-general-channel",channel_name,channel_name)
+                    print("reached here")
+                    await create_private_channel(server,channel_name + "-doubt-channel",channel_name,channel_name,"text")
+                    await create_private_channel(server,channel_name + "-voice-channel",channel_name,channel_name,"text")
+                    await create_private_channel(server,channel_name + "-general-channel",channel_name,channel_name,"voice")
+                    print("leaving now")
             else:
                 now = datetime.now()
                 now = now.replace(second=0, microsecond=0)
@@ -97,5 +102,14 @@ async def create_channel(server, executed_events, existing_channels):
 
                 if now == end_time and channel_name in existing_channels:
                     # executed_events.remove(channel_name) 
-                    end_channel = discord.utils.get(server.text_channels,name = channel_name)
-                    await end_channel.delete()
+                    # end_channel = discord.utils.get(server.text_channels,name = channel_name)
+                    categ_to_delete = discord.utils.get(server.categories,name = channel_name)
+                    
+                    if categ_to_delete:
+                        channels = categ_to_delete.channels
+
+                    for channel in channels:
+                        print(channel.name)
+                        await channel.delete()
+                    
+                    await categ_to_delete.delete()
